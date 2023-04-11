@@ -13,18 +13,18 @@ router.route('/').get(async (req, res) => {
 
 router.route('/add').post(async (req, res) => {
   const title = String(req.body.title);
-  const description = String(req.body.description);
-  const duration = parseInt(req.body.duration);
+  const recipe = String(req.body.recipe);
+  const ingredients = req.body.ingredients;
   const notes = String(req.body.notes);
-  const userId = req.session.userId;
+  const _user = req.session.user._id;
   let newRecipe;
 
   try {
     newRecipe = await Recipe.saveRecipe({
       title,
-      description,
-      duration,
-      _user: userId,
+      recipe,
+      ingredients,
+      _user,
       notes
     })
     return res.json(newRecipe)
@@ -56,8 +56,8 @@ router.route('/update/:id').post(async (req, res) => {
     let recipe = await Recipe.findById(req.params.id);
     recipe = recipe.updateRecipe({
       title: String(req.body.title),
-      description: String(req.body.description),
-      duration: parseInt(req.body.duration),
+      recipe: String(req.body.recipe),
+      ingredients: String(req.body.ingredients),
       notes: String(req.body.notes)
     });
     return res.json(recipe);

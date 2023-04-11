@@ -23,6 +23,15 @@ if (process.env.NODE_ENV === 'production') {
   db.startDB({ uri: 'mongodb://localhost:27017/env_development' })
 }
 
+app.use((req, res, next) => {
+  const mongoose = require('mongoose');
+  const ObjectId = mongoose.Types.ObjectId;
+  req.session = {};
+  req.session.user = {};
+  req.session.user._id = new ObjectId();
+  next();
+})
+
 const cookingRouter = require('./routes/cooking');
 const recipeRouter = require('./routes/recipe');
 const userRouter = require('./routes/user');

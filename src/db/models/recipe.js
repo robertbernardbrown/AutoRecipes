@@ -4,8 +4,8 @@ const ObjectId = mongoose.Schema.Types.ObjectId
 
 const recipeSchema = new Schema({
   title: { type: String, required: true },
-  description: { type: String, required: true },
-  duration: { type: Number, required: true },
+  recipe: { type: String, required: true },
+  ingredients: [{ type: String }],
   notes: { type: String },
   _user: { type: ObjectId },
   createdOn: {
@@ -33,15 +33,15 @@ recipeSchema.methods.updateRecipe = async function (params = {}) {
   return this
 }
 
-recipeSchema.statics.saveRecipe = async function ({ title, description, duration, notes, userId }) {
-  if (!title || !description || !duration || !userId) {
+recipeSchema.statics.saveRecipe = async function ({ title, recipe, ingredients, notes, _user }) {
+  if (!title || !recipe || !ingredients.length || !_user) {
     throw new Error('Missing required params')
   }
   const newRecipe = new Recipe({
     title,
-    description,
-    duration,
-    _user: userId,
+    recipe,
+    ingredients,
+    _user,
     notes
   })
 
