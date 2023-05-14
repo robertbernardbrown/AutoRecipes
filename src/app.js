@@ -3,6 +3,16 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+const passport = require('passport');
+const session = require('express-session');
+
+const userRouter = require('./routes/user');
+const cookingRouter = require('./routes/cooking');
+const recipeRouter = require('./routes/recipe');
+const {
+  authRouter,
+  helpers: { requireAuth }
+} = require('./routes/authentication');
 
 // APP SETUP
 const app = express();
@@ -11,6 +21,14 @@ const PORT = process.env.PORT || 5000;
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_KEY,
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/auth', authRouter);
 
 // DATABASE
 if (process.env.NODE_ENV === 'production') {
@@ -23,23 +41,12 @@ if (process.env.NODE_ENV === 'production') {
   db.startDB({ uri: 'mongodb://localhost:27017/env_development' })
 }
 
-app.use((req, res, next) => {
-  const mongoose = require('mongoose');
-  const ObjectId = mongoose.Types.ObjectId;
-  req.session = {};
-  req.session.user = {};
-  req.session.user._id = new ObjectId();
-  next();
-})
-
-const cookingRouter = require('./routes/cooking');
-const recipeRouter = require('./routes/recipe');
-const userRouter = require('./routes/user');
-
 // ROUTES
-app.use('/cooking', cookingRouter);
-app.use('/recipes', recipeRouter);
-app.use('/users', userRouter);
+// user routes defined before functionality to ensure auth
+app.use('/users', requireAuth, userRouter);
+// functionality routes
+app.use('/cooking', requireAuth, cookingRouter);
+app.use('/recipes', requireAuth, recipeRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
